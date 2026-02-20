@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ListTodo, Settings, Sparkles } from 'lucide-react';
 import { useChecklist } from '@/hooks/useChecklist';
 import { ActionItemEditor } from './ActionItemEditor';
@@ -13,6 +13,7 @@ type Tab = 'execute' | 'manage';
  */
 export function App() {
   const [activeTab, setActiveTab] = useState<Tab>('execute');
+  const [mounted, setMounted] = useState(false);
   const {
     actionItems,
     sortedTasks,
@@ -26,8 +27,13 @@ export function App() {
     cancelTask,
   } = useChecklist();
 
-  // 等待本地存储加载
-  if (!isLoaded) {
+  // 确保客户端挂载后再渲染，避免 hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // 等待本地存储加载或客户端挂载
+  if (!mounted || !isLoaded) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
