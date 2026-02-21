@@ -10,8 +10,8 @@
 
 | 项目 | 内容 |
 |------|------|
-| **产品名称** | J人养成器 |
-| **英文名称** | J-Checklist |
+| **产品名称** | P人助手 |
+| **英文名称** | P-Helper |
 | **当前版本** | v0.2.0 |
 | **在线地址** | https://summonpoet.github.io/J-Checklist/ |
 | **代码仓库** | https://github.com/summonpoet/J-Checklist |

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, Edit2, X, Check, Settings } from 'lucide-react';
+import { Plus, Trash2, Edit2, X, Check, Wrench, Shovel, Axe, Pickaxe, Heart, Package } from 'lucide-react';
 import { ActionItem, Difficulty, Importance } from '@/types';
 
 interface ActionItemEditorProps {
@@ -11,20 +11,21 @@ interface ActionItemEditorProps {
   onDelete: (id: string) => void;
 }
 
-const difficultyLabels: Record<Difficulty, { label: string; color: string }> = {
-  low: { label: '低', color: 'bg-green-100 text-green-700 border-green-200' },
-  medium: { label: '中', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
-  high: { label: '高', color: 'bg-red-100 text-red-700 border-red-200' },
-};
+const difficultyOptions: { value: Difficulty; label: string; icon: typeof Shovel; color: string; desc: string }[] = [
+  { value: 'low', label: '轻松活', icon: Shovel, color: 'bg-green-100 text-green-700 border-green-300', desc: '顺手就能干' },
+  { value: 'medium', label: '费点劲', icon: Axe, color: 'bg-yellow-100 text-yellow-700 border-yellow-300', desc: '得使点劲' },
+  { value: 'high', label: '苦力活', icon: Pickaxe, color: 'bg-red-100 text-red-700 border-red-300', desc: '大工程啊' },
+];
 
-const importanceLabels: Record<Importance, { label: string; color: string }> = {
-  low: { label: '低', color: 'bg-gray-100 text-gray-600 border-gray-200' },
-  medium: { label: '中', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-  high: { label: '高', color: 'bg-purple-100 text-purple-700 border-purple-200' },
-};
+const importanceOptions: { value: Importance; label: string; hearts: number; color: string }[] = [
+  { value: 'low', label: '随便搞搞', hearts: 1, color: 'bg-stone-100 text-stone-600 border-stone-300' },
+  { value: 'medium', label: '得重视', hearts: 2, color: 'bg-blue-100 text-blue-700 border-blue-300' },
+  { value: 'high', label: '很重要', hearts: 3, color: 'bg-purple-100 text-purple-700 border-purple-300' },
+];
 
 /**
- * 行动项编辑界面组件
+ * 行动项编辑界面 - 当个事儿办
+ * 星露谷风格 🌾
  */
 export function ActionItemEditor({ actionItems, onAdd, onUpdate, onDelete }: ActionItemEditorProps) {
   const [isAdding, setIsAdding] = useState(false);
@@ -87,80 +88,89 @@ export function ActionItemEditor({ actionItems, onAdd, onUpdate, onDelete }: Act
       {/* 标题 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Settings className="w-5 h-5 text-stone-600" />
-          <h2 className="text-lg font-semibold text-stone-800">管理行动项</h2>
+          <Wrench className="w-6 h-6 text-[#6090c0]" />
+          <h2 className="text-xl font-bold text-[#5c4a32]">当个事儿办</h2>
         </div>
-        <span className="text-sm text-stone-500">{actionItems.length} 个行动项</span>
+        <span className="text-sm text-[#8b6914] bg-[#e8d4a2] px-3 py-1 rounded-full border border-[#b8a878]">
+          {actionItems.length} 个事儿
+        </span>
       </div>
 
       {/* 添加按钮 */}
       {!isFormOpen && (
         <button
           onClick={() => setIsAdding(true)}
-          className="w-full py-3 px-4 border-2 border-dashed border-stone-300 rounded-xl text-stone-500 hover:border-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-4 px-4 border-2 border-dashed border-[#b8a878] rounded-xl text-[#8b6914] hover:border-[#90c040] hover:text-[#5c8a20] hover:bg-[#d4e8c0] transition-colors flex items-center justify-center gap-2 font-bold"
         >
           <Plus className="w-5 h-5" />
-          添加行动项
+          加个事儿
         </button>
       )}
 
       {/* 表单 */}
       {isFormOpen && (
-        <div className="bg-white rounded-xl border border-stone-200 p-4 space-y-4 shadow-sm">
+        <div className="bg-[#f8f0d8] rounded-xl border-2 border-[#b8a878] p-4 space-y-4 shadow-md">
           {/* 名称 */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
-              行动项名称
+            <label className="block text-sm font-bold text-[#5c4a32] mb-1.5">
+              事儿叫啥名儿
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="例如：阅读30分钟"
-              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-transparent"
+              placeholder="比如：给菜园浇水"
+              className="w-full px-3 py-2 bg-white border-2 border-[#b8a878] rounded-lg focus:outline-none focus:border-[#90c040] text-[#5c4a32] placeholder-[#a08060]"
               autoFocus
             />
           </div>
 
           {/* 难度和重要性 */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">
-                难度
+              <label className="block text-sm font-bold text-[#5c4a32] mb-1.5">
+                这活儿累不累
               </label>
               <div className="flex gap-2">
-                {(['low', 'medium', 'high'] as Difficulty[]).map((d) => (
+                {difficultyOptions.map((d) => (
                   <button
-                    key={d}
-                    onClick={() => setDifficulty(d)}
-                    className={`flex-1 py-2 px-1 rounded-lg border text-sm font-medium transition-colors ${
-                      difficulty === d
-                        ? difficultyLabels[d].color + ' ring-2 ring-offset-1'
-                        : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                    key={d.value}
+                    onClick={() => setDifficulty(d.value)}
+                    className={`flex-1 py-2 px-1 rounded-lg border-2 text-sm font-bold transition-all ${
+                      difficulty === d.value
+                        ? `${d.color} ring-2 ring-offset-1 ring-[#8b6914]`
+                        : 'bg-[#e8d4a2] text-[#5c4a32] border-[#b8a878] hover:bg-[#d4c494]'
                     }`}
+                    title={d.desc}
                   >
-                    {difficultyLabels[d].label}
+                    <d.icon className="w-4 h-4 mx-auto mb-1" />
+                    {d.label}
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">
-                重要度
+              <label className="block text-sm font-bold text-[#5c4a32] mb-1.5">
+                这事儿多重要
               </label>
               <div className="flex gap-2">
-                {(['low', 'medium', 'high'] as Importance[]).map((i) => (
+                {importanceOptions.map((i) => (
                   <button
-                    key={i}
-                    onClick={() => setImportance(i)}
-                    className={`flex-1 py-2 px-1 rounded-lg border text-sm font-medium transition-colors ${
-                      importance === i
-                        ? importanceLabels[i].color + ' ring-2 ring-offset-1'
-                        : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                    key={i.value}
+                    onClick={() => setImportance(i.value)}
+                    className={`flex-1 py-2 px-1 rounded-lg border-2 text-sm font-bold transition-all ${
+                      importance === i.value
+                        ? `${i.color} ring-2 ring-offset-1 ring-[#8b6914]`
+                        : 'bg-[#e8d4a2] text-[#5c4a32] border-[#b8a878] hover:bg-[#d4c494]'
                     }`}
                   >
-                    {importanceLabels[i].label}
+                    <div className="flex justify-center gap-0.5 mb-1">
+                      {Array.from({ length: i.hearts }).map((_, idx) => (
+                        <Heart key={idx} className="w-3 h-3 fill-current" />
+                      ))}
+                    </div>
+                    {i.label}
                   </button>
                 ))}
               </div>
@@ -169,22 +179,22 @@ export function ActionItemEditor({ actionItems, onAdd, onUpdate, onDelete }: Act
 
           {/* 一日几次 */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
-              一日几次
+            <label className="block text-sm font-bold text-[#5c4a32] mb-1.5">
+              一天得干几回
             </label>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 bg-[#e8d4a2] rounded-lg p-2 border-2 border-[#b8a878]">
               <button
                 onClick={() => setTimesPerDay(Math.max(1, timesPerDay - 1))}
-                className="w-10 h-10 rounded-lg border border-stone-300 flex items-center justify-center hover:bg-stone-100 transition-colors"
+                className="w-10 h-10 rounded-lg border-2 border-[#8b6914] bg-[#f8f0d8] flex items-center justify-center hover:bg-[#d4e8c0] transition-colors font-bold text-[#5c4a32]"
               >
                 -
               </button>
-              <span className="w-16 text-center text-lg font-semibold text-stone-800">
+              <span className="w-16 text-center text-xl font-bold text-[#5c4a32]">
                 {timesPerDay}
               </span>
               <button
                 onClick={() => setTimesPerDay(timesPerDay + 1)}
-                className="w-10 h-10 rounded-lg border border-stone-300 flex items-center justify-center hover:bg-stone-100 transition-colors"
+                className="w-10 h-10 rounded-lg border-2 border-[#8b6914] bg-[#f8f0d8] flex items-center justify-center hover:bg-[#d4e8c0] transition-colors font-bold text-[#5c4a32]"
               >
                 +
               </button>
@@ -193,35 +203,35 @@ export function ActionItemEditor({ actionItems, onAdd, onUpdate, onDelete }: Act
 
           {/* 有始有终 */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
-              有始有终？
+            <label className="block text-sm font-bold text-[#5c4a32] mb-1.5">
+              得掐着点儿不？
             </label>
             <div className="flex gap-3">
               <button
                 onClick={() => setHasDuration(false)}
-                className={`flex-1 py-2.5 px-4 rounded-lg border text-sm font-medium transition-colors ${
+                className={`flex-1 py-2.5 px-4 rounded-lg border-2 text-sm font-bold transition-colors ${
                   !hasDuration
-                    ? 'bg-stone-800 text-white border-stone-800'
-                    : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                    ? 'bg-[#90c040] text-white border-[#5c8a20]'
+                    : 'bg-[#e8d4a2] text-[#5c4a32] border-[#b8a878]'
                 }`}
               >
-                否，只记录完成
+                不用，干完就行
               </button>
               <button
                 onClick={() => setHasDuration(true)}
-                className={`flex-1 py-2.5 px-4 rounded-lg border text-sm font-medium transition-colors ${
+                className={`flex-1 py-2.5 px-4 rounded-lg border-2 text-sm font-bold transition-colors ${
                   hasDuration
-                    ? 'bg-stone-800 text-white border-stone-800'
-                    : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                    ? 'bg-[#6090c0] text-white border-[#305070]'
+                    : 'bg-[#e8d4a2] text-[#5c4a32] border-[#b8a878]'
                 }`}
               >
-                是，记录时间
+                得记个时
               </button>
             </div>
-            <p className="mt-1.5 text-xs text-stone-500">
+            <p className="mt-1.5 text-xs text-[#8b6914]">
               {hasDuration
-                ? '使用时需要点击"开干"和"干完"来记录用时'
-                : '使用时只需点击"干"来记录完成'}
+                ? '到时候得点"开干"和"收工"来记时间'
+                : '到时候点"干完"就行'}
             </p>
           </div>
 
@@ -229,18 +239,18 @@ export function ActionItemEditor({ actionItems, onAdd, onUpdate, onDelete }: Act
           <div className="flex gap-3 pt-2">
             <button
               onClick={cancelEditing}
-              className="flex-1 py-2.5 px-4 border border-stone-300 rounded-lg text-stone-600 hover:bg-stone-50 transition-colors flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 px-4 border-2 border-[#8b6914] rounded-lg text-[#5c4a32] hover:bg-[#e8d4a2] transition-colors flex items-center justify-center gap-1.5 font-bold"
             >
               <X className="w-4 h-4" />
-              取消
+              算了
             </button>
             <button
               onClick={editingId ? handleUpdate : handleSubmit}
               disabled={!name.trim()}
-              className="flex-1 py-2.5 px-4 bg-stone-800 text-white rounded-lg hover:bg-stone-700 disabled:bg-stone-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 px-4 bg-[#90c040] text-white rounded-lg hover:bg-[#7ab030] disabled:bg-[#c4b494] disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-1.5 font-bold border-2 border-[#5c8a20]"
             >
               <Check className="w-4 h-4" />
-              {editingId ? '保存' : '添加'}
+              {editingId ? '存好' : '加上'}
             </button>
           </div>
         </div>
@@ -252,24 +262,41 @@ export function ActionItemEditor({ actionItems, onAdd, onUpdate, onDelete }: Act
           {actionItems.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm"
+              className="bg-[#f8f0d8] rounded-xl border-2 border-[#b8a878] p-4 shadow-sm"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-stone-800 truncate">{item.name}</h3>
+                  <h3 className="font-bold text-[#5c4a32] truncate">{item.name}</h3>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${difficultyLabels[item.difficulty].color}`}>
-                      难度: {difficultyLabels[item.difficulty].label}
-                    </span>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${importanceLabels[item.importance].color}`}>
-                      重要: {importanceLabels[item.importance].label}
-                    </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-100 text-stone-600 border border-stone-200">
-                      {item.timesPerDay}次/天
+                    {(() => {
+                      const diff = difficultyOptions.find(d => d.value === item.difficulty);
+                      return diff ? (
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold ${diff.color}`}>
+                          <diff.icon className="w-3 h-3" />
+                          {diff.label}
+                        </span>
+                      ) : null;
+                    })()}
+                    {(() => {
+                      const imp = importanceOptions.find(i => i.value === item.importance);
+                      return imp ? (
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold ${imp.color}`}>
+                          <div className="flex gap-0.5">
+                            {Array.from({ length: imp.hearts }).map((_, i) => (
+                              <Heart key={i} className="w-3 h-3 fill-current" />
+                            ))}
+                          </div>
+                          {imp.label}
+                        </span>
+                      ) : null;
+                    })()}
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-[#e8d4a2] text-[#5c4a32] border border-[#b8a878]">
+                      <Package className="w-3 h-3 mr-1" />
+                      {item.timesPerDay}回/天
                     </span>
                     {item.hasDuration && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700 border border-orange-200">
-                        计时
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-[#d0e0f0] text-[#305070] border border-[#6090c0]">
+                        ⏱ 计时
                       </span>
                     )}
                   </div>
@@ -277,13 +304,13 @@ export function ActionItemEditor({ actionItems, onAdd, onUpdate, onDelete }: Act
                 <div className="flex items-center gap-1 ml-2">
                   <button
                     onClick={() => startEditing(item)}
-                    className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
+                    className="p-2 text-[#8b6914] hover:text-[#5c4a32] hover:bg-[#e8d4a2] rounded-lg transition-colors"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => onDelete(item.id)}
-                    className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-[#c07060] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -296,9 +323,10 @@ export function ActionItemEditor({ actionItems, onAdd, onUpdate, onDelete }: Act
 
       {/* 空状态 */}
       {actionItems.length === 0 && !isAdding && (
-        <div className="text-center py-8 text-stone-400">
-          <p>还没有行动项</p>
-          <p className="text-sm mt-1">点击上方按钮添加你的第一个行动项</p>
+        <div className="text-center py-8 text-[#a08060]">
+          <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p>还没啥事儿</p>
+          <p className="text-sm mt-1">点上面按钮加个事儿吧</p>
         </div>
       )}
     </div>
