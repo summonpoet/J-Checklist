@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Key, Eye, EyeOff, ChefHat } from 'lucide-react';
+import { X, Key, Eye, EyeOff, ChefHat, HelpCircle, ExternalLink } from 'lucide-react';
 import { AIConfig, AIProvider } from '@/types/checkup';
 
 interface AIConfigModalProps {
@@ -11,36 +11,41 @@ interface AIConfigModalProps {
   existingConfig?: AIConfig | null;
 }
 
-const PROVIDERS: { value: AIProvider; label: string; models: string[]; desc: string }[] = [
+const PROVIDERS: { value: AIProvider; label: string; models: string[]; desc: string; hasCors: boolean }[] = [
   { 
     value: 'moonshot', 
     label: 'Moonshot', 
     models: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
-    desc: '国内可用，推荐'
+    desc: '国内可用，推荐',
+    hasCors: false, // Moonshot 不支持浏览器直接访问
   },
   { 
     value: 'zhipu', 
     label: '智谱', 
     models: ['glm-4-flash', 'glm-4', 'glm-4-plus'],
-    desc: '国产大模型'
+    desc: '国产大模型',
+    hasCors: false,
   },
   { 
     value: 'openai', 
     label: 'OpenAI', 
     models: ['gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo'],
-    desc: '需要梯子'
+    desc: '需要梯子',
+    hasCors: false,
   },
   { 
     value: 'anthropic', 
     label: 'Claude', 
     models: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229'],
-    desc: '需要梯子'
+    desc: '需要梯子',
+    hasCors: false,
   },
   { 
     value: 'custom', 
     label: '自定义', 
     models: ['自定义模型'],
-    desc: '其他API'
+    desc: '其他API或代理',
+    hasCors: true,
   },
 ];
 
@@ -53,6 +58,8 @@ export function AIConfigModal({ isOpen, onClose, onSave, existingConfig }: AICon
   const [apiUrl, setApiUrl] = useState(existingConfig?.apiUrl || '');
   const [model, setModel] = useState(existingConfig?.model || '');
   const [showKey, setShowKey] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [useProxy, setUseProxy] = useState(existingConfig?.apiUrl?.includes('cors') || false);
 
   const selectedProvider = PROVIDERS.find((p) => p.value === provider);
   const defaultModel = selectedProvider?.models[0] || '';
@@ -61,10 +68,17 @@ export function AIConfigModal({ isOpen, onClose, onSave, existingConfig }: AICon
     e.preventDefault();
     if (!apiKey.trim()) return;
 
+    // 如果使用代理，自动添加代理地址
+    let finalApiUrl = apiUrl;
+    if (useProxy && provider !== 'custom') {
+      // 使用公开 CORS 代理（仅供测试）
+      finalApiUrl = `https://corsproxy.io/?https://api.moonshot.cn/v1/chat/completions`;
+    }
+
     onSave({
       provider,
       apiKey: apiKey.trim(),
-      apiUrl: provider === 'custom' ? apiUrl.trim() : undefined,
+      apiUrl: finalApiUrl || undefined,
       model: model || defaultModel,
     });
     onClose();
@@ -82,12 +96,30 @@ export function AIConfigModal({ isOpen, onClose, onSave, existingConfig }: AICon
             <h2 className="text-lg font-bold text-[#5c4a32]">叫唠叨奶奶出来</h2>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => setShowHelp(!showHelp)}
             className="p-2 text-[#8b6914] hover:text-[#5c4a32] hover:bg-[#d4c494] rounded-lg transition-colors"
           >
-            <X className="w-5 h-5" />
+            <HelpCircle className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Help Panel */}
+        {showHelp && (
+          <div className="px-6 py-4 bg-[#f0e8d0] border-b-2 border-[#d4c494] text-sm text-[#5c4a32]">
+            <h4 className="font-bold mb-2">为啥可能连不上？</h4>
+            <p className="mb-2">
+              浏览器有个叫"跨域"的限制，大部分 AI 服务（包括 Moonshot）都不让网页直接调用。
+            </p>
+            <p className="mb-2">
+              <strong>解决办法：</strong>
+            </p>
+            <ul className="list-disc list-inside space-y-1 text-xs">
+              <li>使用浏览器插件（如 CORS Unblock）</li>
+              <li>使用"自定义"模式填入代理地址</li>
+              <li>暂时使用智谱 AI（glm-4-flash 免费）</li>
+            </ul>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
@@ -118,8 +150,27 @@ export function AIConfigModal({ isOpen, onClose, onSave, existingConfig }: AICon
             </div>
             <p className="mt-2 text-xs text-[#8b6914]">
               {selectedProvider?.desc}
+              {!selectedProvider?.hasCors && (
+                <span className="text-[#e07050] ml-1">⚠️ 需要代理</span>
+              )}
             </p>
           </div>
+
+          {/* Proxy Option */}
+          {provider !== 'custom' && (
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="useProxy"
+                checked={useProxy}
+                onChange={(e) => setUseProxy(e.target.checked)}
+                className="w-4 h-4 accent-[#90c040]"
+              />
+              <label htmlFor="useProxy" className="text-sm text-[#5c4a32] font-bold cursor-pointer">
+                使用 CORS 代理（不稳定，仅测试）
+              </label>
+            </div>
+          )}
 
           {/* API Key */}
           <div>
@@ -163,6 +214,9 @@ export function AIConfigModal({ isOpen, onClose, onSave, existingConfig }: AICon
                 className="w-full px-3 py-2.5 bg-white border-2 border-[#b8a878] rounded-lg focus:outline-none focus:border-[#90c040] text-[#5c4a32]"
                 required
               />
+              <p className="mt-1.5 text-xs text-[#8b6914]">
+                可以填入 CORS 代理地址，如 corsproxy.io
+              </p>
             </div>
           )}
 
@@ -193,6 +247,22 @@ export function AIConfigModal({ isOpen, onClose, onSave, existingConfig }: AICon
             <ChefHat className="w-5 h-5" />
             奶奶出来吧！
           </button>
+
+          {/* Get API Key Link */}
+          <div className="text-center">
+            <a
+              href={provider === 'moonshot' ? 'https://platform.moonshot.cn' : 
+                    provider === 'zhipu' ? 'https://open.bigmodel.cn' :
+                    provider === 'openai' ? 'https://platform.openai.com' :
+                    provider === 'anthropic' ? 'https://console.anthropic.com' : '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-[#6090c0] hover:text-[#305070] font-bold"
+            >
+              去 {selectedProvider?.label} 搞个钥匙
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
         </form>
       </div>
     </div>

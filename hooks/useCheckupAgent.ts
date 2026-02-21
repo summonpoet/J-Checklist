@@ -227,7 +227,7 @@ async function callAI(config: AIConfig, prompt: string): Promise<string> {
     try {
       const errorJson = JSON.parse(errorText);
       if (errorJson.error?.message?.includes('Authentication') || errorJson.error?.type?.includes('authentication')) {
-        errorMessage = 'API Key 无效或已过期，请检查是否复制正确';
+        errorMessage = 'API Key 验证失败。可能原因：\n1. Key 复制不完整（检查是否以 sk- 开头）\n2. 浏览器跨域限制（需要使用代理）\n3. Key 确实无效';
       } else if (errorJson.error?.message) {
         errorMessage = errorJson.error.message;
       } else {
