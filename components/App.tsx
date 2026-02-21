@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ListTodo, Settings, Sparkles } from 'lucide-react';
+import { ListTodo, Settings, Sparkles, Brain } from 'lucide-react';
 import { useChecklist } from '@/hooks/useChecklist';
+import { useCheckupAgent } from '@/hooks/useCheckupAgent';
 import { ActionItemEditor } from './ActionItemEditor';
 import { TaskExecutor } from './TaskExecutor';
+import { CheckupAgent } from './CheckupAgent';
 
-type Tab = 'execute' | 'manage';
+type Tab = 'execute' | 'manage' | 'checkup';
 
 /**
  * 主应用组件
@@ -14,9 +16,11 @@ type Tab = 'execute' | 'manage';
 export function App() {
   const [activeTab, setActiveTab] = useState<Tab>('execute');
   const [mounted, setMounted] = useState(false);
+  
   const {
     actionItems,
     sortedTasks,
+    todayTasks,
     isLoaded,
     addActionItem,
     updateActionItem,
@@ -26,6 +30,20 @@ export function App() {
     completeTaskSimple,
     cancelTask,
   } = useChecklist();
+
+  const today = new Date().toISOString().split('T')[0];
+  
+  const {
+    config: aiConfig,
+    todayReview,
+    todayStats,
+    history,
+    isAnalyzing,
+    error: checkupError,
+    saveConfig,
+    analyze,
+    clearTodayReview,
+  } = useCheckupAgent(actionItems, todayTasks, today);
 
   // 确保客户端挂载后再渲染，避免 hydration mismatch
   useEffect(() => {
@@ -60,7 +78,7 @@ export function App() {
 
       {/* 主内容区 */}
       <main className="max-w-md mx-auto px-4 py-4 pb-24">
-        {activeTab === 'execute' ? (
+        {activeTab === 'execute' && (
           <TaskExecutor
             sortedTasks={sortedTasks}
             onStart={startTask}
@@ -68,12 +86,28 @@ export function App() {
             onCompleteSimple={completeTaskSimple}
             onCancel={cancelTask}
           />
-        ) : (
+        )}
+        
+        {activeTab === 'manage' && (
           <ActionItemEditor
             actionItems={actionItems}
             onAdd={addActionItem}
             onUpdate={updateActionItem}
             onDelete={deleteActionItem}
+          />
+        )}
+        
+        {activeTab === 'checkup' && (
+          <CheckupAgent
+            config={aiConfig}
+            todayReview={todayReview}
+            todayStats={todayStats}
+            history={history}
+            isAnalyzing={isAnalyzing}
+            error={checkupError}
+            onSaveConfig={saveConfig}
+            onAnalyze={analyze}
+            onClearReview={clearTodayReview}
           />
         )}
       </main>
@@ -92,6 +126,17 @@ export function App() {
             >
               <ListTodo className="w-6 h-6 mb-0.5" />
               <span className="text-xs font-medium">执行任务</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('checkup')}
+              className={`flex-1 flex flex-col items-center py-3 transition-colors ${
+                activeTab === 'checkup'
+                  ? 'text-purple-600'
+                  : 'text-stone-400 hover:text-purple-500'
+              }`}
+            >
+              <Brain className="w-6 h-6 mb-0.5" />
+              <span className="text-xs font-medium">AI教练</span>
             </button>
             <button
               onClick={() => setActiveTab('manage')}

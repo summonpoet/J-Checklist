@@ -12,7 +12,7 @@
 |------|------|
 | **产品名称** | J人养成器 |
 | **英文名称** | J-Checklist |
-| **当前版本** | v0.1.0 |
+| **当前版本** | v0.2.0 |
 | **在线地址** | https://summonpoet.github.io/J-Checklist/ |
 | **代码仓库** | https://github.com/summonpoet/J-Checklist |
 | **技术栈** | Next.js + React + TypeScript + Tailwind CSS |
@@ -59,6 +59,23 @@
 - ✅ 跨天自动重置任务状态
 - ✅ 数据版本管理（避免升级后数据冲突）
 
+#### 5. AI 养成教练 (Checkup Agent) ⭐ NEW
+- ✅ 多 AI 提供商支持（OpenAI、Claude、Moonshot、智谱、自定义）
+- ✅ 智能任务分析：
+  - 总体完成率分析
+  - 重要任务完成率分析
+  - 困难任务完成率分析
+  - 专注时间统计
+- ✅ 个性化评价生成：
+  - 一句话总结
+  - 详细评价报告
+  - 亮点提取
+  - 改进建议
+- ✅ 历史数据对比（保留最近7天上下文）
+- ✅ 综合评分系统（0-100分）
+- ✅ 心情标签（超棒/不错/还行/加油）
+- ✅ 本地 API Key 存储（安全，不上传服务器）
+
 ---
 
 ## 🛠️ 技术架构
@@ -73,12 +90,16 @@ checklist-app/
 ├── components/            # React 组件
 │   ├── App.tsx           # 主应用组件（含底部导航）
 │   ├── ActionItemEditor.tsx  # 界面1：管理行动项
-│   └── TaskExecutor.tsx  # 界面2：执行任务
+│   ├── TaskExecutor.tsx  # 界面2：执行任务
+│   ├── CheckupAgent.tsx  # 界面3：AI 养成教练 ⭐ NEW
+│   └── AIConfigModal.tsx # AI 配置弹窗 ⭐ NEW
 ├── hooks/                # 自定义 Hooks
 │   ├── useLocalStorage.ts  # localStorage 持久化
-│   └── useChecklist.ts    # 核心业务逻辑
+│   ├── useChecklist.ts    # 核心业务逻辑
+│   └── useCheckupAgent.ts # AI 教练逻辑 ⭐ NEW
 ├── types/                # TypeScript 类型定义
-│   └── index.ts
+│   ├── index.ts          # 基础类型
+│   └── checkup.ts        # AI 模块类型 ⭐ NEW
 ├── docs/                 # 构建输出（GitHub Pages）
 └── PRODUCT.md            # 本文件
 ```
@@ -165,6 +186,28 @@ git push origin master
 
 ## 📜 更新日志
 
+### v0.2.0 (2026-02-20) ⭐ 重大更新
+**AI 养成教练模块上线**
+
+#### 新增功能
+- ✨ **AI 养成教练 (Checkup Agent)**
+  - 支持多平台 AI：OpenAI、Anthropic Claude、Moonshot Kimi、智谱 GLM
+  - 智能分析任务完成数据（完成率、重要度、难度）
+  - 生成个性化每日评价和总结
+  - 历史数据对比分析（7天上下文记忆）
+  - 综合评分和心情标签系统
+  - API Key 本地加密存储
+- ✨ 新增 "AI教练" 底部导航栏入口
+
+#### 技术实现
+- 新增 `useCheckupAgent` Hook 管理 AI 逻辑
+- 新增 `AIConfigModal` 组件配置 AI 提供商
+- 新增 `CheckupAgent` 主组件展示分析结果
+- 新增 `checkup.ts` 类型定义
+- 使用 React Context 模式管理 AI 状态
+
+---
+
 ### v0.1.0 (2026-02-20)
 **初始版本发布**
 
@@ -192,11 +235,16 @@ git push origin master
 
 ## 🗺️ 路线图
 
-### 计划功能（v0.2.0）
-- [ ] 历史记录查看（过去7天完成情况）
+### 计划功能（v0.3.0）
 - [ ] 数据导出/导入（JSON 格式）
 - [ ] 连续完成天数统计（Streak）
 - [ ] 任务完成提醒（浏览器通知）
+- [ ] AI 语音播报评价（Web Speech API）
+
+### 计划功能（v0.4.0）
+- [ ] 周/月报生成（AI 生成周期性总结）
+- [ ] 习惯养成建议（基于数据分析）
+- [ ] 任务推荐系统（AI 推荐合适的任务量）
 
 ### 远期规划（v1.0.0）
 - [ ] 云端数据同步（支持多设备）
@@ -248,6 +296,7 @@ chore: 构建/配置相关
 |------|--------|------|
 | 2026-02-20 | Kimi | 创建项目，实现 v0.1.0 基础功能 |
 | 2026-02-20 | Kimi | 修复 GitHub Pages 部署问题 |
+| 2026-02-20 | Kimi | 发布 v0.2.0，上线 AI 养成教练模块 |
 
 ---
 
@@ -257,4 +306,4 @@ MIT License - 详见仓库 LICENSE 文件
 
 ---
 
-> 最后更新：2026-02-20
+> 最后更新：2026-02-20 (v0.2.0)
