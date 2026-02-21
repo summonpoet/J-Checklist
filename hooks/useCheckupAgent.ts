@@ -181,7 +181,8 @@ async function callAI(config: AIConfig, prompt: string): Promise<string> {
 
     case 'moonshot':
       url = 'https://api.moonshot.cn/v1/chat/completions';
-      headers['Authorization'] = `Bearer ${config.apiKey}`;
+      // Moonshot 使用 api-key header 而不是 Authorization
+      headers['Authorization'] = `Bearer ${config.apiKey.trim()}`;
       body = {
         model: config.model || 'moonshot-v1-8k',
         messages: [{ role: 'user', content: prompt }],
@@ -220,8 +221,23 @@ async function callAI(config: AIConfig, prompt: string): Promise<string> {
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`API 调用失败: ${error}`);
+    const errorText = await response.text();
+    let errorMessage = 'API 调用失败';
+    
+    try {
+      const errorJson = JSON.parse(errorText);
+      if (errorJson.error?.message?.includes('Authentication') || errorJson.error?.type?.includes('authentication')) {
+        errorMessage = 'API Key 无效或已过期，请检查是否复制正确';
+      } else if (errorJson.error?.message) {
+        errorMessage = errorJson.error.message;
+      } else {
+        errorMessage = JSON.stringify(errorJson);
+      }
+    } catch {
+      errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`;
+    }
+    
+    throw new Error(errorMessage);
   }
 
   const data = await response.json();
@@ -261,7 +277,12 @@ export function useCheckupAgent(
    * 保存 AI 配置
    */
   const saveConfig = useCallback((config: AIConfig) => {
-    setState((prev) => ({ ...prev, config }));
+    // 确保 API Key 没有前后空格
+    const cleanConfig = {
+      ...config,
+      apiKey: config.apiKey.trim(),
+    };
+    setState((prev) => ({ ...prev, config: cleanConfig, error: null }));
   }, [setState]);
 
   /**
