@@ -80,8 +80,18 @@ function buildPrompt(stats: DailyStats, history: CheckupHistory): string {
  * 调用 AI API
  */
 async function callAI(prompt: string): Promise<string> {
+  // 调试日志（只显示 Key 的前几位）
+  const keyPreview = API_KEY ? `${API_KEY.slice(0, 10)}...` : '未设置';
+  console.log('[Checkup API] Provider:', API_PROVIDER);
+  console.log('[Checkup API] Key Preview:', keyPreview);
+  console.log('[Checkup API] Model:', API_MODEL);
+  
   if (!API_KEY) {
-    throw new Error('服务器未配置 API Key');
+    throw new Error('服务器未配置 API Key。请检查 Vercel Environment Variables 中是否设置了 CHECKUP_API_KEY');
+  }
+  
+  if (!API_KEY.startsWith('sk-')) {
+    throw new Error(`API Key 格式不正确。当前 Key 以 "${API_KEY.slice(0, 5)}" 开头，应该以 "sk-" 开头。请检查 CHECKUP_API_KEY 是否复制完整。`);
   }
 
   let url: string;
