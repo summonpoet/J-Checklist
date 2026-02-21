@@ -81,9 +81,10 @@ function buildPrompt(stats: DailyStats, history: CheckupHistory): string {
  */
 async function callAI(prompt: string): Promise<string> {
   // 调试日志（只显示 Key 的前几位）
-  const keyPreview = API_KEY ? `${API_KEY.slice(0, 10)}...` : '未设置';
+  const keyPreview = API_KEY ? `${API_KEY.slice(0, 15)}...` : '未设置';
   console.log('[Checkup API] Provider:', API_PROVIDER);
   console.log('[Checkup API] Key Preview:', keyPreview);
+  console.log('[Checkup API] Key Length:', API_KEY.length);
   console.log('[Checkup API] Model:', API_MODEL);
   
   if (!API_KEY) {
@@ -93,14 +94,20 @@ async function callAI(prompt: string): Promise<string> {
   if (!API_KEY.startsWith('sk-')) {
     throw new Error(`API Key 格式不正确。当前 Key 以 "${API_KEY.slice(0, 5)}" 开头，应该以 "sk-" 开头。请检查 CHECKUP_API_KEY 是否复制完整。`);
   }
+  
+  if (API_KEY.length < 20) {
+    throw new Error(`API Key 长度异常 (${API_KEY.length} 字符)，可能未复制完整。请重新复制完整的 Key。`);
+  }
 
   let url: string;
   let body: Record<string, unknown>;
-  let headers: Record<string, string> = {
+  
+  // 所有提供商都使用相同的 headers 格式
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${API_KEY}`,
   };
-
+  
   switch (API_PROVIDER) {
     case 'moonshot':
       url = 'https://api.moonshot.cn/v1/chat/completions';
@@ -109,6 +116,11 @@ async function callAI(prompt: string): Promise<string> {
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
       };
+      console.log('[Checkup API] Request URL:', url);
+      console.log('[Checkup API] Headers:', {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY.slice(0, 10)}...`
+      });
       break;
 
     case 'openai':
