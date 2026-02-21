@@ -35,13 +35,11 @@ export function App() {
   const today = new Date().toISOString().split('T')[0];
   
   const {
-    config: aiConfig,
     todayReview,
     todayStats,
     history,
     isAnalyzing,
     error: checkupError,
-    saveConfig,
     analyze,
     clearTodayReview,
   } = useCheckupAgent(actionItems, todayTasks, today);
@@ -103,13 +101,11 @@ export function App() {
         
         {activeTab === 'checkup' && (
           <CheckupAgent
-            config={aiConfig}
             todayReview={todayReview}
             todayStats={todayStats}
             history={history}
             isAnalyzing={isAnalyzing}
             error={checkupError}
-            onSaveConfig={saveConfig}
             onAnalyze={analyze}
             onClearReview={clearTodayReview}
           />

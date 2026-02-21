@@ -1,10 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
-  distDir: 'docs',
-  basePath: '/J-Checklist',
-  assetPrefix: '/J-Checklist',
+  // 移除 output: 'export' 以支持 API 路由
+  // output: 'export',
+  // distDir: 'docs',
   images: {
     unoptimized: true,
   },

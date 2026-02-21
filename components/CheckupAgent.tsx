@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { 
-  MessageCircleHeart, 
   TrendingUp, 
   Award, 
   Lightbulb, 
@@ -12,21 +11,19 @@ import {
   Zap,
   Clock,
   AlertCircle,
-  Sparkles,
+  ChefHat,
   Scroll,
-  ChefHat
+  Info
 } from 'lucide-react';
-import { CheckupReview, DailyStats, CheckupHistory, AIConfig } from '@/types/checkup';
+import { CheckupReview, DailyStats, CheckupHistory } from '@/types/checkup';
 import { AIConfigModal } from './AIConfigModal';
 
 interface CheckupAgentProps {
-  config: AIConfig | null;
   todayReview: CheckupReview | null;
   todayStats: DailyStats;
   history: CheckupHistory;
   isAnalyzing: boolean;
   error: string | null;
-  onSaveConfig: (config: AIConfig) => void;
   onAnalyze: () => void;
   onClearReview: () => void;
 }
@@ -108,50 +105,16 @@ function ProgressBar({
  * 唠叨奶奶主组件
  */
 export function CheckupAgent({
-  config,
   todayReview,
   todayStats,
   history,
   isAnalyzing,
   error,
-  onSaveConfig,
   onAnalyze,
   onClearReview,
 }: CheckupAgentProps) {
-  const [showConfig, setShowConfig] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-
-  // 未配置 AI
-  if (!config) {
-    return (
-      <div className="bg-gradient-to-br from-[#f0d8a0] to-[#e8c080] rounded-2xl border-2 border-[#b8a878] p-6 shadow-md">
-        <div className="text-center space-y-4">
-          <div className="w-20 h-20 bg-[#f8f0d8] rounded-full flex items-center justify-center mx-auto border-4 border-[#8b6914] shadow-inner">
-            <ChefHat className="w-10 h-10 text-[#8b6914]" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-[#5c4a32]">叫唤你的唠叨奶奶</h3>
-            <p className="text-sm text-[#8b6914] mt-2 max-w-sm mx-auto leading-relaxed">
-              唠叨奶奶虽然烦，但她会给你鼠粮。<br/>
-              她会每天瞅瞅你活儿干得咋样，<br/>
-              唠叨几句，再给点实在的鼓励。
-            </p>
-          </div>
-          <button
-            onClick={() => setShowConfig(true)}
-            className="px-6 py-3 bg-[#90c040] text-white rounded-xl font-bold hover:bg-[#7ab030] transition-colors border-2 border-[#5c8a20] shadow-md"
-          >
-            叫奶奶出来
-          </button>
-        </div>
-        <AIConfigModal
-          isOpen={showConfig}
-          onClose={() => setShowConfig(false)}
-          onSave={onSaveConfig}
-        />
-      </div>
-    );
-  }
 
   // 分析中
   if (isAnalyzing) {
@@ -186,6 +149,12 @@ export function CheckupAgent({
           >
             {showHistory ? '收起账本' : '翻翻旧账'}
           </button>
+          <button
+            onClick={() => setShowHelp(true)}
+            className="p-2 text-[#8b6914] hover:text-[#5c4a32] hover:bg-[#e8d4a2] rounded-lg transition-colors"
+          >
+            <Info className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
@@ -194,13 +163,7 @@ export function CheckupAgent({
         <div className="p-4 bg-[#f0d0c8] border-2 border-[#e07050] rounded-xl flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-[#a04030] flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm text-[#a04030] font-bold">{error}</p>
-            <button
-              onClick={() => setShowConfig(true)}
-              className="text-sm text-[#e07050] hover:text-[#a04030] mt-1 underline font-bold"
-            >
-              去修修
-            </button>
+            <p className="text-sm text-[#a04030] font-bold whitespace-pre-line">{error}</p>
           </div>
         </div>
       )}
@@ -269,7 +232,7 @@ export function CheckupAgent({
           {/* Actions */}
           <div className="px-5 py-3 bg-[#e8d4a2] border-t-2 border-[#d4c494] flex items-center justify-between">
             <span className="text-xs text-[#8b6914] font-bold">
-              唠叨奶奶来自 {config.provider}
+              唠叨奶奶在线服务
             </span>
             <button
               onClick={onClearReview}
@@ -362,12 +325,7 @@ export function CheckupAgent({
         </div>
       )}
 
-      <AIConfigModal
-        isOpen={showConfig}
-        onClose={() => setShowConfig(false)}
-        onSave={onSaveConfig}
-        existingConfig={config}
-      />
+      <AIConfigModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
     </div>
   );
 }
